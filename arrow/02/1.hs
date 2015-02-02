@@ -1,5 +1,5 @@
 import Control.Arrow hiding ((+++))
-import Control.Category (Category)
+import qualified Control.Category as C
 
 addA :: Arrow arr => arr a Int -> arr a Int -> arr a Int
 addA f g = (f &&& g) >>> arr (uncurry (+))
@@ -17,8 +17,9 @@ mapA f = arr listcase >>>
 
 newtype SF a b = SF {runSF :: [a] -> [b]}
 
-instance Category SF where
-  {- omitted -}
+instance C.Category SF where
+  id = C.id
+  SF f . SF g = SF (f C.. g)
 
 instance Arrow SF where
   arr f = SF (map f)
@@ -38,11 +39,17 @@ f +++ g = left' f >>> right' g
 
 delay x = SF (init . (x:))
 
+delaysA = arr listcase >>>
+          arr (const []) |||
+          (arr id  *** (delaysA >>> delay []) >>>
+          arr (uncurry (:)))
+
 main = do
   print $ (addA f g) 2
   print $ (mulA f g) (1, 2)
   print $ first f (1, 2)
   print $ mapA (arr succ) [1..10]
   runKleisli (mapA (Kleisli print) >>> Kleisli print) [1..5]
+  print $ runSF (mapA (delay 0)) [[1,2,3,16],[4,5,9],[6],[7,8],[9,10,11],[12,13,14,15]]
 
 
