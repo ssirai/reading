@@ -56,3 +56,16 @@ readFile :: Kleisli IO String String
 どうでもいいが accomodate は accommodate のミススペル。
 
 ### 1.4 Arrow laws
+
+## 3 Pointed arrow programming
+
+arrow のための syntactic sugar
+
+以下の 2 つは同等。
+
+```haskell
+proc (x, y) -> delay False -< x && y
+
+arr (\(x, y) -> x && y) >> delay False
+```
+
